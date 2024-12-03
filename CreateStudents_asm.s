@@ -15,10 +15,10 @@
 #include <iregdef.h>        // Defines the register convention names
 
     .text
-    .globl  CreateStudents_asm             # Makes the Pow function visible for other programs      
-    .ent    CreateStudents_asm
+    .globl  CreateStudent_asm             # Makes the Pow function visible for other programs      
+    .ent    CreateStudent_asm
     
-CreateStudents_asm:
+CreateStudent_asm:
     # Salva os registradores de retorno na pilha
     addi sp, sp, -32          # Cria espaço na pilha
     sw ra, 28(sp)             # Salva $ra (endereço de retorno)
@@ -31,7 +31,7 @@ CreateStudents_asm:
     move s0, v0               # Salva o endereço da estrutura em $s0
 
     # Verifica se a alocação foi bem-sucedida
-    beqz s0, CreateStudents_asm_Error
+    beqz s0, CreateStudent_asm_Error
 
     # Copia o campo 'course'
     move a0, a2               # Endereço do curso
@@ -72,11 +72,11 @@ CreateStudents_asm:
     addi sp, sp, 32          # Ajusta a pilha de volta
     jr ra                      # Retorna para o chamador
 
-CreateStudents_asm_Error:
+CreateStudent_asm_Error:
     li v0, 0                   # Retorna NULL em caso de erro
     lw ra, 28(sp)             # Restaura o endereço de retorno
     lw s0, 24(sp)             # Restaura $s0
     addi sp, sp, 32          # Ajusta a pilha de volta
     jr ra                      # Retorna para o chamador
 
-.end CreateStudents_asm
+.end CreateStudent_asm

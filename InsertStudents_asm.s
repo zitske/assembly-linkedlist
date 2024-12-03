@@ -1,3 +1,9 @@
+#include <iregdef.h>        // Defines the register convention names
+
+    .text
+    .globl  InsertStudent_asm             # Makes the function visible for other programs      
+    .ent    InsertStudent_asm
+
 # Função: InsertStudent
 # Insere um estudante em uma lista encadeada.
 # Argumentos:
@@ -6,7 +12,7 @@
 # Retorno:
 #   $v0 = ponteiro atualizado para o início da lista (cabeçalho).
 
-InsertStudent:
+InsertStudent_asm:
     # Salva os registradores na pilha
     addiu $sp, $sp, -16       # Cria espaço na pilha
     sw $ra, 12($sp)           # Salva o endereço de retorno
@@ -26,3 +32,5 @@ InsertStudent:
     lw $s1, 4($sp)            # Restaura $s1
     addiu $sp, $sp, 16        # Ajusta a pilha de volta
     jr $ra                    # Retorna para o chamador
+
+.end InsertStudent_asm
