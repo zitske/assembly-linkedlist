@@ -2,12 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Declarações das funções Assembly
-extern struct LinkedList *CreateList_asm();
-extern struct Student *CreateStudent_asm(char *name, unsigned int registration, char *course, unsigned int month, unsigned int year, unsigned int day, char *hometown);
-extern void InsertStudent_asm(struct LinkedList *list, struct Student *newStudent);
-extern void PrintListReverse_asm(struct Node *ptr);
-
 /*** List element definition ***/
 struct Student {   
     char course[45];
@@ -40,22 +34,95 @@ struct LinkedList {
 
 /*** Initialize the list struct as an empty list ***/
 struct LinkedList *CreateList() {
-    // Chamada da função Assembly
-    return CreateList_asm();
+    struct LinkedList *list = (struct LinkedList *)malloc(sizeof(struct LinkedList));
+
+    list->head = NULL;
+    list->tail = NULL;
+    list->size = 0;
+    
+    return list;
 }
 
     
 /*** Creates a new instance of struct Student and fill it ***/
 struct Student *CreateStudent(char *name, unsigned int registration, char *course, unsigned int month, unsigned int year, unsigned int day, char *hometown) {
-    // Chamada da função Assembly
-    return CreateStudent_asm(name, registration, course, month, year, day, hometown);
+    
+    struct Student *newStudent;
+    
+    /* Allocates a new student struct in order to hold the new student informations */
+    newStudent = (struct Student *)malloc(sizeof(struct Student));
+    
+    /* Sets the student information */
+    strcpy(newStudent->course, course);
+    newStudent->registration = registration;
+    strcpy(newStudent->name, name);
+    newStudent->year = year;
+    newStudent->month = month;
+    newStudent->day = day;    
+    strcpy(newStudent->hometown, hometown);
+    
+    return newStudent;
 }
 
 /* Insert student according to registration order (lower registration first) */
 void InsertStudent(struct LinkedList *list, struct Student *newStudent) {
-    // Chamada da função Assembly
-    InsertStudent_asm(list, newStudent);
+    
+    /* Auxiliary pointer */
+    struct Node *aux, *newNode;
+    struct Node *auxPrev;  /* Points the node right before aux */
+    
+    unsigned int currentRegistration;
+    
+    /* Allocates a new node to be inserted in the list */
+    newNode = (struct Node *)malloc(sizeof(struct Node));
+         
+    /* Set the new node to point the new created student */
+    newNode->data = (struct Student *)newStudent;  // Casts the void pointer (data)
+    
+    /* Initialize the new node next pointer to NULL */
+    newNode->next = NULL;
+     
+    /* Searches for the right place to insert the student */
+    /* Students are linked following registration order */
+    /* list->head points the lower registration */
+    for (aux = list->head; aux != NULL; auxPrev = aux, aux = aux->next) {
+        currentRegistration = ((struct Student *)aux->data)->registration;
+        if (newStudent->registration < currentRegistration) 
+            /* Verifies if the new student has the lower registration */
+            if (aux == list->head) {
+                /* Inserts before the first node (new head node) */
+                list->head = newNode;
+                newNode->next = aux;                
+                break;
+            }
+            else {                
+                /* Inserts between two nodes */
+                auxPrev->next = newNode;
+                newNode->next = aux;
+                break;
+            }
+    }
+    
+    /* If aux == NULL, then the list is empty or the student has the higher registration */
+    if (aux == NULL) { 
+        
+        /* Verifies if the list is empty */
+        if (list->size == 0)    
+            /* Empty list: inserts the new node as head */
+            list->head = newNode;            
+        else 
+            /* Inserts after the tail node (new tail node) */
+            auxPrev->next = newNode;
+        
+        /* Set the new node as tail */
+        list->tail = newNode;
+    }
+    
+    /* Updates the list size */
+    list->size++;               
 }
+
+
 
 /* Prints the list from head to tail */
 void PrintList(struct LinkedList *list) {
@@ -74,9 +141,21 @@ void PrintList(struct LinkedList *list) {
 }
 
 void PrintListReverse(struct Node *ptr) {
-    // Chamada da função Assembly
-    PrintListReverse_asm(ptr);
+
+    struct Node *aux;
+    struct Student *student; 
+    char buffer[] = "%s %d %s %d/%d/%d %s\n";  /**** IMPORTANTE: este array deve ser alocado no stack frame da função ****/
+        
+    if (ptr->next != NULL) 
+        PrintListReverse(ptr->next);
+    
+    student = (struct Student *)ptr->data;
+    printf(buffer, student->name, student->registration, student->course, student->day, student->month, student->year, student->hometown);
+ 
 }
+
+
+
 
 int main() {
 

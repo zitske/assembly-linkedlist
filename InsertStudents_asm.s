@@ -23,7 +23,6 @@ InsertStudent_asm:
     move $s0, $a1             # $s0 agora aponta para o novo estudante
     lw $t0, 0($a0)            # Carrega o ponteiro de cabeçalho (lista atual)
     sw $t0, 0($s0)            # Configura o próximo nó do novo estudante
-                                # (próximo aponta para o início atual da lista)
     move $v0, $s0             # Atualiza o cabeçalho para o novo nó
 
     # Restaura os registradores e retorna
