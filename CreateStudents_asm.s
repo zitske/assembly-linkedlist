@@ -5,6 +5,8 @@
 
 .text
 .globl CreateStudent_asm
+.globl malloc  # Declarar malloc como função global
+.globl strcpy  # Declarar strcpy como função global
 
 CreateStudent_asm:
     # Salvar o endereço de retorno e o ponteiro de quadro

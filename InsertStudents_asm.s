@@ -1,5 +1,6 @@
 .text
 .globl InsertStudent_asm
+.extern malloc  # Declarar malloc como função externa
 
 InsertStudent_asm:
     # Salvar o endereço de retorno e o ponteiro de quadro
