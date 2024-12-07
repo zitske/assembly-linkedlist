@@ -1,0 +1,114 @@
+   .text
+    .globl _start
+
+# Ponto de entrada do programa
+_start:
+    li $29, 0x80040000       # Configura o stack pointer (sp -> $29) para 0x80040000
+    jal main                 # Chama a função main
+    jal _exit                # Finaliza o programa
+
+# Implementação da função _exit
+.globl _exit
+_exit:
+    li $2, 10                # syscall 10: exit (v0 -> $2)
+    syscall
+
+# Implementação da função get_mem_conf
+.globl get_mem_conf
+get_mem_conf:
+    li $2, 0                 # Retorna 0 (v0 -> $2)
+    jr $31                   # Retorna para o chamador (ra -> registrador 31)
+
+# Função CreateStudent_asm
+.globl CreateStudent_asm
+
+# Cria uma instância de estudante, preenche os campos e retorna um ponteiro para a instância.
+# Utiliza malloc() para alocar memória e strcpy() para preencher os campos de texto.
+# Argumentos:
+# $4: Ponteiro para o nome (name)
+# $5: Matrícula (registration)
+# $6: Ponteiro para o curso (course)
+# $7: Mês de nascimento (month)
+# $8: Ano de nascimento (year)
+# $9: Dia de nascimento (day)
+# $10: Ponteiro para a cidade natal (hometown)
+# Retorno:
+# $2: Ponteiro para a estrutura de estudante preenchida
+CreateStudent_asm:
+    addi $29, $29, -40       # Reserva espaço na pilha
+    sw $31, 36($29)          # Salva $31 (ra)
+    sw $16, 32($29)          # Salva $16 (temporário)
+    sw $17, 28($29)          # Salva $17
+    sw $18, 24($29)          # Salva $18
+
+    # Aloca memória para a estrutura (sizeof(struct Student) = 208 bytes)
+    li $4, 208
+    jal malloc
+    move $16, $2             # Ponteiro retornado por malloc armazenado em $16
+
+    # strcpy(newStudent->name, name)
+    move $4, $16             # Ponteiro do destino em strcpy
+    addi $4, $4, 0           # Offset para o campo 'name'
+    move $5, $4              # Fonte: ponteiro para o nome
+    jal strcpy
+
+    # strcpy(newStudent->course, course)
+    move $4, $16
+    addi $4, $4, 130         # Offset para o campo 'course'
+    move $5, $6              # Fonte: ponteiro para o curso
+    jal strcpy
+
+    # strcpy(newStudent->hometown, hometown)
+    move $4, $16
+    addi $4, $4, 176         # Offset para o campo 'hometown'
+    move $5, $10             # Fonte: ponteiro para a cidade natal
+    jal strcpy
+
+    # Preenche os campos numéricos
+    sw $5, 45($16)           # Matrícula
+    sw $8, 198($16)          # Ano de nascimento
+    sb $7, 202($16)          # Mês de nascimento
+    sb $9, 203($16)          # Dia de nascimento
+
+    # Retorna o ponteiro da estrutura preenchida
+    move $2, $16
+
+    # Restaura os registradores
+    lw $31, 36($29)
+    lw $16, 32($29)
+    lw $17, 28($29)
+    lw $18, 24($29)
+    addi $29, $29, 40        # Libera espaço na pilha
+    jr $31                   # Retorna ao chamador
+
+# Implementação da função main
+.globl main
+main:
+    # Este é um exemplo básico de como a função CreateStudent_asm seria usada.
+    # Aqui chamamos CreateStudent_asm com argumentos simulados.
+
+    # Carregar argumentos para CreateStudent_asm
+    la $4, name_string       # Ponteiro para "Ozzy Osbourne"
+    li $5, 666               # Matrícula
+    la $6, course_string     # Ponteiro para "Heavy Metal"
+    li $7, 12                # Mês
+    li $8, 1948              # Ano
+    li $9, 3                 # Dia
+    la $10, hometown_string  # Ponteiro para "Aston"
+
+    # Chama a função CreateStudent_asm
+    jal CreateStudent_asm
+
+    # Ponteiro retornado por CreateStudent_asm estará em $2
+    move $16, $2             # Salva o ponteiro retornado para futura utilização
+
+    # Finaliza o programa
+    jr $31                   # Retorna ao chamador
+
+# Strings de exemplo para os argumentos
+.data
+name_string:      .asciiz "Ozzy Osbourne"
+course_string:    .asciiz "Heavy Metal"
+hometown_string:  .asciiz "Aston"
+
+
