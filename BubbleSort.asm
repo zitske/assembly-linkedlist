@@ -1,57 +1,83 @@
-# Função: BubbleSort
-# Parâmetros:
-#   $a0 = ponteiro para o array (int *array)
-#   $a1 = tamanho do array (int size)
-# 
-# Registradores utilizados:
-#   $t0 = i (índice do array)
-#   $t1 = j (índice do array, j = i + 1)
-#   $t2 = temp (variável temporária para a troca)
-#   $t3 = swap (flag para verificar se houve troca)
-#   $t4 = elemento array[i]
-#   $t5 = elemento array[j]
+#   void BubbleSort(int *array, int size) {
+#
+#       int i, j, temp;
+#       int swap = 1;
+#
+#       while (swap == 1) {
+#           swap = 0;
+#           for(i = 0, j = 1; j < size; i++, j++)
+#               if (array[i] > array[j]) {
+#                   temp = array[j];
+#                   array[j] = array[i];
+#                   array[i] = temp;
+#                   swap = 1;
+#               }
+#           }
+#       }
 
-BubbleSort:
-    # Inicializa swap = 1
-    li $t3, 1           # swap = 1
 
-BubbleSort_while:
-    beq $t3, $zero, BubbleSort_end  # Se swap == 0, sai do loop
-    li $t3, 0           # swap = 0
+.text
+    
+    # a0: &array
+    la $a0, array
+    
+    # a1: size
+    li $a1, 5         
 
-    li $t0, 0           # i = 0
-    add $t1, $t0, 1     # j = i + 1
+bubbleSort:
+    # t0: swap
+    addi $t0, $zero, 1              
+    
+    # t9: constante 1
+    addi $t9, $zero, 1
+    
+    # while (swap == 1)
+while:
+    bne $t0, $t9, while_end       # Sai do laço se swap = 1
+   
+    # swap = 0;
+    add $t0, $zero, $zero
+    
+    # t1: i
+    add $t1, $zero, $zero           
+    
+    # t2: j
+    addi $t2, $zero, 1
+    
+    # for(i = 0, j = 1; j<size; i++, j++)   
+for:
+    # j < size ?
+    slt $t8, $t2, $a1               # j < size ?
+    beq $t8, $zero, for_end         # Sai do laço se j >= size
+    
+    # if (array[i] > array[j])
+    # Obtém array[i]
+    sll $t3, $t1, 2                 # Obtém deslocamento em palavras correspondente ao índice i
+    add $t3, $a0, $t3               # t3: &array[i] (base do array + deslocamento do índice)
+    lw $t4, 0($t3)                  # t4: array[i]
+    
+    # Obtém array[j]
+    sll $t5, $t2, 2                 # Obtém deslocamento em palavras correspondente ao índice j
+    add $t5, $a0, $t5               # t5: &array[j] (base do array + deslocamento do índice)
+    lw $t6, 0($t5)                  # t6: array[j]
+    
+    # array[j] < array[i] ?
+    slt $t8, $t6, $t4               # array[j] < array[i] ?
+    beq $t8, $zero, inc             # Pula corpo do if condição for falsa
+        # swap(array[j], array[i])
+        sw $t4, 0($t5)
+        sw $t6, 0($t3)
+        addi $t0, $zero, 1          # swap <- 1 
+        
+inc:
+    addi $t1, $t1, 1                # i++
+    addi $t2, $t2, 1                # j++
+    j for
+    
+for_end:
+    j while
+while_end:
 
-BubbleSort_for:
-    bge $t1, $a1, BubbleSort_while_end  # Se j >= size, termina o for
 
-    # Carregar array[i] e array[j] em $t4 e $t5
-    sll $t6, $t0, 2     # $t6 = i * 4 (offset para acessar array[i])
-    add $t7, $a0, $t6   # Endereço de array[i]
-    lw $t4, 0($t7)      # Carrega array[i] em $t4
-
-    sll $t6, $t1, 2     # $t6 = j * 4 (offset para acessar array[j])
-    add $t7, $a0, $t6   # Endereço de array[j]
-    lw $t5, 0($t7)      # Carrega array[j] em $t5
-
-    # Comparar se array[i] > array[j]
-    ble $t4, $t5, BubbleSort_no_swap  # Se array[i] <= array[j], não troca
-
-    # Troca array[i] com array[j]
-    move $t2, $t4      # temp = array[i]
-    sw $t4, 0($t7)     # array[j] = array[i]
-    sll $t6, $t0, 2    # $t6 = i * 4
-    add $t7, $a0, $t6  # Endereço de array[i]
-    sw $t5, 0($t7)     # array[i] = array[j]
-    li $t3, 1          # swap = 1
-
-BubbleSort_no_swap:
-    addi $t0, $t0, 1   # i++
-    addi $t1, $t1, 1   # j++
-    j BubbleSort_for   # Volta para o início do for
-
-BubbleSort_while_end:
-    j BubbleSort_while # Volta para o início do while
-
-BubbleSort_end:
-    jr $ra             # Retorna da função
+.data
+    array: .word 5 -1 -3 2 4
